@@ -1,3 +1,5 @@
+Ébauche :
+
 Attention quand on lance le programme, ping doit lancer un paquet "originel" a la seconde 0, ce qui veux dire que si on utilise l'option -w, on doit avoir le temps d'envoyer 6 paquet
 
 /!\ Attention il faut lancer le programme en super user (penser a ajouter la vérif)
@@ -17,7 +19,8 @@ A test
 ping ---vvvv
 ping ---w
 ping -s 10
-ping -i 0.2
+ping -i 0.2 (root et no root)
+ping -i 0.1 (root et no root)
 ping -i 0.2.
 ping -i 0.
 ping -i 1
@@ -32,3 +35,5 @@ ping ""
 ping -s ""
 ping -i ""
 ping -c -w
+ping -v
+ping -?
