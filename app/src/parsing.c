@@ -1,0 +1,115 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parsing.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: agirona <marvin@42.fr>                    +#+  +:+       +#+         */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/11 22:01:13 by agirona           #+#    #+#             */
+/*   Updated: 2026/04/12 11:24:34 by agirona          ###   ########lyon.fr   */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../include/ft_ping.h"
+
+char	*parse_flag_identifier(char *to_parse)
+{
+	int	i;
+	int	count;
+
+	i = 0;
+	count = 0;
+	while (to_parse[i] != '\0' && to_parse[i] == '-')
+	{
+		count++;
+		i++;
+	}
+	if (count >= 3)
+		error_exit(1, true, UNRECOGNIZED, to_parse);
+	return (to_parse + i);
+}
+
+int	verify_flag_value(char *flag_id, char *flag_value)
+{
+	int		i;
+
+	i = 0;
+	if (flag_value[0] == '-')
+		flag_value = flag_value + 1;
+	if (flag_value[0] == '\0')
+		return (-1);
+	if (strcmp(flag_id, "i") == 0)
+	{
+		if (check_is_float(flag_value) == -1)
+			return (-1);
+	}
+	else
+	{
+		while (flag_value[i] != '\0')
+		{
+			if (isdigit(flag_value[i]) == 0)
+				return (-1);
+			i++;
+		}
+	}
+	return (0);
+}
+
+int	verify_flag_limits(t_parameters *params)
+{
+	if (params->time_to_live == TTL_MIN)
+		error_exit(1, false, TOO_SMALL, params->time_to_live);
+	else if (params->time_to_live > TTL_MAX || params->time_to_live < TTL_MIN)
+		error_exit(1, false, TOO_BIG, params->time_to_live);
+	if (params->interval < 0.2)
+	{
+		if (getuid() != 0)
+			error_exit(1, false, TOO_SMALL_TTL, params->interval);
+	}
+	return (0);
+}
+
+int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
+{
+	char	*flag_id;
+	char	*flag_value;
+
+	flag_id = parse_flag_identifier(args[current_index]);
+	if (flag_id == NULL)
+		return (-1);
+	if (strcmp(flag_id, "v") == 0)
+		print_version_menu();
+	if (strcmp(flag_id, "?") == 0)
+		print_help_menu();
+	current_index++;
+	if (current_index == argc)
+		error_exit(1, false, MISSING_VALUE, flag_id);
+	flag_value = args[current_index];
+	if (verify_flag_value(flag_id, flag_value))
+		error_exit(1, false, INVALID_VALUE, flag_id);
+	store_flag(params, flag_id, flag_value);
+	verify_flag_limits(params);
+	return (0);
+}
+
+int	parse_args(char **args, int argc, t_parameters *params)
+{
+	int		i;
+
+	i = 0;
+	while (i < argc)
+	{
+		if (args[i][0] == '-')
+		{
+			if (parse_flag(params, args, argc, i) == -1)
+				return (-1);
+			i++;
+		}
+		else
+		{
+			params->ip_address = args[i];
+		}
+		i++;
+	}
+	return (0);
+}
