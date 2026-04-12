@@ -57,15 +57,17 @@ int	verify_flag_value(char *flag_id, char *flag_value)
 
 int	verify_flag_limits(t_parameters *params)
 {
-	if (params->time_to_live == TTL_MIN)
-		error_exit(1, false, TOO_SMALL, params->time_to_live);
+	if (params->time_to_live == 0)
+		error_exit(1, false, TOO_SMALL, params->string_time_to_live);
 	else if (params->time_to_live > TTL_MAX || params->time_to_live < TTL_MIN)
-		error_exit(1, false, TOO_BIG, params->time_to_live);
+		error_exit(1, false, TOO_BIG, params->string_time_to_live);
 	if (params->interval < 0.2)
 	{
 		if (getuid() != 0)
-			error_exit(1, false, TOO_SMALL_TTL, params->interval);
+			error_exit(1, false, TOO_SMALL, params->string_interval);
 	}
+	if (params->paquet_size > PACKET_MAX_SIZE)
+		error_exit(1, false, TOO_BIG, params->string_paquet_size);
 	return (0);
 }
 
@@ -86,7 +88,7 @@ int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
 		error_exit(1, false, MISSING_VALUE, flag_id);
 	flag_value = args[current_index];
 	if (verify_flag_value(flag_id, flag_value))
-		error_exit(1, false, INVALID_VALUE, flag_id);
+		error_exit(1, false, INVALID_VALUE, flag_value);
 	store_flag(params, flag_id, flag_value);
 	verify_flag_limits(params);
 	return (0);

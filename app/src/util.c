@@ -12,22 +12,43 @@
 
 #include "../include/ft_ping.h"
 
-void	store_flag(t_parameters *params, char *flag_id, char *flag_value)
+void	store_extra_flag(t_parameters *params, char *flag_id, char *flag_value)
 {
-	if (strcmp(flag_id, "c") == 0)
-		params->count = atoi(flag_value);
-	else if (strcmp(flag_id, "i") == 0)
-		params->interval = atof(flag_value);
-	else if (strcmp(flag_id, "w") == 0)
-		params->timeout = atoi(flag_value);
-	else if (strcmp(flag_id, "s") == 0)
-		params->paquet_size = atoi(flag_value);
-	else if (strcmp(flag_id, "ttl") == 0)
+	if (strcmp(flag_id, "ttl") == 0)
+	{
 		params->time_to_live = atoi(flag_value);
+		params->string_time_to_live = flag_value;
+	}
 	else if (strcmp(flag_id, "v") == 0)
 		params->version = true;
 	else if (strcmp(flag_id, "?") == 0)
 		params->help = true;
+}
+
+void	store_flag(t_parameters *params, char *flag_id, char *flag_value)
+{
+	if (strcmp(flag_id, "c") == 0)
+	{
+		params->count = atoi(flag_value);
+		params->string_count = flag_value;
+	}
+	else if (strcmp(flag_id, "i") == 0)
+	{
+		params->interval = atof(flag_value);
+		params->string_interval = flag_value;
+	}
+	else if (strcmp(flag_id, "w") == 0)
+	{
+		params->timeout = atoi(flag_value);
+		params->string_timeout = flag_value;
+	}
+	else if (strcmp(flag_id, "s") == 0)
+	{
+		params->paquet_size = atoi(flag_value);
+		params->string_paquet_size = flag_value;
+	}
+	else
+		store_extra_flag(params, flag_id, flag_value);
 }
 
 void	error_exit(int code, bool print_try, const char *msg, ...)
@@ -58,6 +79,8 @@ void	error_exit(int code, bool print_try, const char *msg, ...)
 void	init_flag_structure(t_parameters *params)
 {
 	params->ip_address = NULL;
+	params->version = false;
+	params->help = false;
 	params->count = -1;
 	params->interval = 1;
 	params->timeout = -1;

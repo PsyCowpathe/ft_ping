@@ -20,17 +20,18 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <stdarg.h>
+# include <netinet/ip_icmp.h>
 
 # define TTL_MAX 255
-# define TTL_MIN 0
+# define TTL_MIN 1
+# define PACKET_MAX_SIZE 65399
 
 # define ERROR_PRINT_TRY "ft_ping: %s\n\
 		Try \'ft_ping -?\' for more information.\n"
 # define ERROR_PRINT "ft_ping: %s\n"
 # define UNRECOGNIZED "unrecognized option '%s'"
-# define TOO_SMALL "option value too small: %d"
-# define TOO_SMALL_TTL "option value too small: %f"
-# define TOO_BIG "option value too big: %d"
+# define TOO_SMALL "option value too small: %s"
+# define TOO_BIG "option value too big: %s"
 # define MISSING_VALUE "option requires an argument -- '%s'"
 # define INVALID_VALUE "invalid value '%s'"
 # define MISSING_HOST "missing host operand"
@@ -39,21 +40,33 @@ typedef struct s_parameters
 {
 	// Target IP address
 	char		*ip_address;
+	char		*string_ip_address;
 	// Show version
 	bool		version;
 	// Show Help menu
 	bool		help;
 	// Number of packet to send before end of ping execution
 	int			count;
+	char		*string_count;
 	// Interval between two packet transmissions (in seconds)
 	float		interval;
+	char		*string_interval;
 	// Time limit between start and end of ping execution (in seconds)
 	int			timeout;
+	char		*string_timeout;
 	// Paquet size (in bytes).
 	int			paquet_size;
+	char		*string_paquet_size;
 	// Number of router a paquet can fo through before expiration
 	int			time_to_live;
+	char		*string_time_to_live;
 }				t_parameters;
+
+typedef struct s_pcket
+{
+	struct icmphdr	header;
+	char			message[PACKET_MAX_SIZE];
+}				t_pcket;
 
 // print_menu
 void	print_version_menu(void);
