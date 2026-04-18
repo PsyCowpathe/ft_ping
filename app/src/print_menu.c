@@ -27,7 +27,7 @@ void	print_help_menu(void)
 	printf("-w, --w			stop after N seconds\n");
 	printf("-s, --s			send NUMBER data octets\n");
 	printf("-ttl, --ttl		specify N as time-to-live\n\n");
-	printf("-v, --v			give this help list\n");
+	printf("-V, --V			give this help list\n");
 	printf("-?, --?			print program version\n");
 	exit(0);
 }

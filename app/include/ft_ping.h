@@ -21,17 +21,20 @@
 # include <unistd.h>
 # include <stdarg.h>
 # include <netinet/ip_icmp.h>
+# include <arpa/inet.h>
+# include <netdb.h>
 
 # define TTL_MAX 255
 # define TTL_MIN 1
 # define PACKET_MAX_SIZE 65399
 
 # define ERROR_PRINT_TRY "ft_ping: %s\n\
-		Try \'ft_ping -?\' for more information.\n"
+Try \'ft_ping -?\' for more information.\n"
 # define ERROR_PRINT "ft_ping: %s\n"
 # define UNRECOGNIZED "unrecognized option '%s'"
 # define TOO_SMALL "option value too small: %s"
 # define TOO_BIG "option value too big: %s"
+# define INVALID_OPTION "invalid option -- '%s'"
 # define MISSING_VALUE "option requires an argument -- '%s'"
 # define INVALID_VALUE "invalid value '%s'"
 # define MISSING_HOST "missing host operand"
@@ -39,28 +42,29 @@
 typedef struct s_parameters
 {
 	// Target IP address
-	char		*ip_address;
-	char		*string_ip_address;
+	struct addrinfo		*ip_address;
+	char				dns_name[NI_MAXHOST];
+	char				*string_ip_address;
 	// Show version
-	bool		version;
+	bool				version;
 	// Show Help menu
-	bool		help;
+	bool				help;
 	// Number of packet to send before end of ping execution
-	int			count;
-	char		*string_count;
+	int					count;
+	char				*string_count;
 	// Interval between two packet transmissions (in seconds)
-	float		interval;
-	char		*string_interval;
+	float				interval;
+	char				*string_interval;
 	// Time limit between start and end of ping execution (in seconds)
-	int			timeout;
-	char		*string_timeout;
+	int					timeout;
+	char				*string_timeout;
 	// Paquet size (in bytes).
-	int			paquet_size;
-	char		*string_paquet_size;
+	int					paquet_size;
+	char				*string_paquet_size;
 	// Number of router a paquet can fo through before expiration
-	int			time_to_live;
-	char		*string_time_to_live;
-}				t_parameters;
+	int					time_to_live;
+	char				*string_time_to_live;
+}						t_parameters;
 
 typedef struct s_pcket
 {
@@ -85,5 +89,8 @@ void	store_flag(t_parameters *params, char *flag_id, char *flag_value);
 void	error_exit(int code, bool print_try, const char *msg, ...);
 void	init_flag_structure(t_parameters *params);
 int		check_is_float(char *flag_value);
+
+// dns
+void	verify_target_address(t_parameters *params);
 
 #endif

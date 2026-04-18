@@ -77,9 +77,7 @@ int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
 	char	*flag_value;
 
 	flag_id = parse_flag_identifier(args[current_index]);
-	if (flag_id == NULL)
-		return (-1);
-	if (strcmp(flag_id, "v") == 0)
+	if (strcmp(flag_id, "V") == 0)
 		print_version_menu();
 	if (strcmp(flag_id, "?") == 0)
 		print_help_menu();
@@ -98,7 +96,7 @@ int	parse_args(char **args, int argc, t_parameters *params)
 {
 	int		i;
 
-	i = 0;
+	i = 1;
 	while (i < argc)
 	{
 		if (args[i][0] == '-')
@@ -109,7 +107,8 @@ int	parse_args(char **args, int argc, t_parameters *params)
 		}
 		else
 		{
-			params->ip_address = args[i];
+			params->string_ip_address = args[i];
+			verify_target_address(params);
 		}
 		i++;
 	}
