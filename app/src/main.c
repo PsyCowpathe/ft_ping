@@ -6,7 +6,7 @@
 /*   By: agirona <marvin@42.fr>                    +#+  +:+       +#+         */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/10 17:15:13 by agirona           #+#    #+#             */
-/*   Updated: 2026/04/10 19:45:23 by agirona          ###   ########lyon.fr   */
+/*   Updated: 2026/04/18 22:25:00 by agirona          ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <netinet/ip_icmp.h>
 #include <strings.h>
 #include <sys/socket.h>
+
+bool	g_run;
 
 unsigned short	checksum(void *b, int len)
 {
@@ -37,26 +39,26 @@ unsigned short	checksum(void *b, int len)
 	return (result);
 }
 
-void	create_header(t_parameters params, t_pcket *packet, int iteration_count)
+void	create_header(t_parameters *params, t_pcket *packet, int iteration)
 {
 	int				i;
 
 	i = 0;
-	packet->header.code = 0;
-	packet->header.type = ICMP_ECHO;
-	packet->header.un.echo.id = getpid();
-	packet->header.un.echo.sequence = iteration_count;
-	while (i < params.paquet_size - 1)
+	packet->send_header.code = 0;
+	packet->send_header.type = ICMP_ECHO;
+	packet->send_header.un.echo.id = getpid();
+	packet->send_header.un.echo.sequence = iteration;
+	while (i < params->paquet_size)
 	{
 		packet->message[i] = i + '0';
 		i++;
 	}
-	packet->header.checksum = 0;
-	packet->header.checksum = checksum(&packet,
-			sizeof(struct icmphdr) + params.paquet_size);
+	packet->send_header.checksum = 0;
+	packet->send_header.checksum = checksum(packet,
+			sizeof(struct icmphdr) + (params->paquet_size));
 }
 
-int	create_socket(t_parameters params)
+int	create_socket(t_parameters *params)
 {
 	struct timeval	tv_out;
 	int				socket_fd;
@@ -70,7 +72,7 @@ int	create_socket(t_parameters params)
 		exit(1);
 	}
 	if (setsockopt(socket_fd, SOL_IP, IP_TTL,
-			&params.time_to_live, sizeof(params.time_to_live)) != 0)
+			&params->time_to_live, sizeof(params->time_to_live)) != 0)
 	{
 		perror("Error while setting TTL option ! ");
 		exit(1);
@@ -83,37 +85,112 @@ int	create_socket(t_parameters params)
 	return (socket_fd);
 }
 
-void	ft_ping(t_parameters params)
+void	stop_run(int sig)
+{
+	(void)sig;
+	g_run = false;
+}
+
+int	send_ping(int socket_fd, t_parameters *params)
 {
 	t_pcket	packet;
-	int		iteration_count;
-	int		socket_fd;
+	int		sent_bytes;
 
-	iteration_count = 1;
-	socket_fd = create_socket(params);
-	while (true)
+	bzero(&packet, sizeof(t_pcket));
+	create_header(params, &packet, params->send_count);
+	clock_gettime(CLOCK_MONOTONIC, &params->start);
+	sent_bytes = sendto(socket_fd, &packet, sizeof(struct icmphdr)
+			+ params->paquet_size, 0, params->ip_address->ai_addr,
+			sizeof(struct sockaddr));
+	if (sent_bytes <= 0)
 	{
-		bzero(&packet, sizeof(t_pcket));
-		create_header(params, &packet, iteration_count);
-		if (sendto(socket_fd, &packet, sizeof(struct icmphdr)
-				+ params.paquet_size, 0, params.ip_address->ai_addr,
-				sizeof(struct sockaddr)) <= 0)
-		{
-			printf("failure");
-			//todo: variable pour dire quón a pas envoyer le packet et donc qu'on doit pas listen pour le retour
-		}
-		else
-		{
-			printf("succedd");
-		}
-		usleep(1000);
-		if (iteration_count >= params.count)
+		printf("failure");
+		//todo: variable pour dire quón a pas envoyer le packet et donc qu'on doit pas listen pour le retour
+	}
+	params->send_count++;
+	return (sent_bytes);
+}
+
+char	*receive_response(int socket_fd, t_parameters *params)
+{
+	int		ret;
+	char	buffer[PACKET_MAX_SIZE];
+
+	ret = recv(socket_fd, &buffer, sizeof(buffer), 0);
+	if (ret <= 0)
+	{
+		printf("%d + failed packet reception ! + %d\n",
+			ret, params->send_count);
+		//todo: do a thing ?
+	}
+	clock_gettime(CLOCK_MONOTONIC, &params->end);
+	return (strdup(buffer));
+}
+
+long double	get_elapsed_time(t_parameters *params)
+{
+	double		elapsed;
+	long double	rtt;
+
+	elapsed = ((double)(params->end.tv_nsec
+				- params->start.tv_nsec)) / 1000000.0;
+	rtt = (params->end.tv_sec - params->start.tv_sec) * 1000.0 + elapsed;
+	if (rtt > params->rtt_max)
+		params->rtt_max = rtt;
+	if (rtt < params->rtt_min)
+		params->rtt_min = rtt;
+	return (rtt);
+}
+
+void	print_stats(t_parameters *params)
+{
+	int	loss;
+
+	loss = (params->send_count - params->receive_count) / params->send_count * 100.0;
+	(void)loss;
+	//double long mdev = sqrt((g_ping.time.sqrd / send_count) - (g_ping.time.avg * g_ping.time.avg));
+	printf("%d packets transmitted, %d packets received, %d%% packet loss",
+		params->send_count, params->receive_count, 0);
+	//printf("rtt min/avg/max/mdev = %.3Lf/%.3Lf/%.3Lf/%.3Lf ms\n", min, g_ping.time.avg, max, mdev);
+}
+
+void	print_response(t_parameters *params, int sent,
+			char *buffer, long double rtt)
+{
+	params->receive_count++;
+	params->ip_header = (struct ip *)buffer;
+	params->receive_header = (struct icmphdr *)((char *)buffer
+			+ (params->ip_header->ip_hl * 4));
+	params->ip_header->ip_ttl--;
+	printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf\n",
+		sent, params->dns_name, params->receive_header->un.echo.sequence,
+		params->ip_header->ip_ttl, rtt);
+	fflush(stdout);
+	free(buffer);
+}
+
+void	ft_ping(t_parameters *params)
+{
+	int			socket_fd;
+	int			sent_bytes;
+	char		*response_buffer;
+	long double	rtt;
+
+	socket_fd = create_socket(params);
+	signal(SIGINT, stop_run);
+	while (g_run)
+	{
+		sent_bytes = send_ping(socket_fd, params);
+		response_buffer = receive_response(socket_fd, params);
+		rtt = get_elapsed_time(params);
+		print_response(params, sent_bytes, response_buffer, rtt);
+		usleep(1000000 * params->interval);
+		if (params->send_count >= params->count)
 		{
 			// need to print ping resume
-			exit(0);
 		}
-		iteration_count++;
 	}
+	print_stats(params);
 }
 
 int	main(int argc, char **argv)
@@ -125,7 +202,8 @@ int	main(int argc, char **argv)
 		init_flag_structure(&params);
 		if (parse_args(argv, argc, &params) == -1)
 			return (1);
-		ft_ping(params);
+		g_run = true;
+		ft_ping(&params);
 		return (0);
 	}
 	else

@@ -18,15 +18,19 @@
 # include <string.h>
 # include <stdbool.h>
 # include <stdlib.h>
+#include <time.h>
 # include <unistd.h>
 # include <stdarg.h>
 # include <netinet/ip_icmp.h>
 # include <arpa/inet.h>
 # include <netdb.h>
+# include <signal.h>
+# include <math.h>
 
 # define TTL_MAX 255
 # define TTL_MIN 1
 # define PACKET_MAX_SIZE 65399
+# define MAX_PAYLOAD_SIZE 65399
 
 # define ERROR_PRINT_TRY "ft_ping: %s\n\
 Try \'ft_ping -?\' for more information.\n"
@@ -38,13 +42,26 @@ Try \'ft_ping -?\' for more information.\n"
 # define MISSING_VALUE "option requires an argument -- '%s'"
 # define INVALID_VALUE "invalid value '%s'"
 # define MISSING_HOST "missing host operand"
+# define UNKNOW_HOST "unknow host"
+# define ERROR_DNS "Error while converting IP address to text ! "
+# define ERROR_REVERSE_DNS "could not resolve reverse dns of %s, with error : \"%s\""
 
 typedef struct s_parameters
 {
 	// Target IP address
 	struct addrinfo		*ip_address;
+
 	char				dns_name[NI_MAXHOST];
-	char				*string_ip_address;
+	char				string_ip_address[INET_ADDRSTRLEN];
+	char				*string_original_target;
+	struct icmphdr		*receive_header;
+	struct ip			*ip_header;
+	struct timespec		start;
+	struct timespec		end;
+	int					send_count;
+	int					receive_count;
+	long double			rtt_min;
+	long double			rtt_max;
 	// Show version
 	bool				version;
 	// Show Help menu
@@ -64,17 +81,20 @@ typedef struct s_parameters
 	// Number of router a paquet can fo through before expiration
 	int					time_to_live;
 	char				*string_time_to_live;
+	// Number of router a paquet can fo through before expiration
+	bool				reverse_dns;
 }						t_parameters;
 
 typedef struct s_pcket
 {
-	struct icmphdr	header;
+	struct icmphdr	send_header;
 	char			message[PACKET_MAX_SIZE];
 }				t_pcket;
 
 // print_menu
 void	print_version_menu(void);
 void	print_help_menu(void);
+int		print_dns_option(t_parameters *params);
 
 // parsing
 char	*parse_flag_identifier(char *to_parse);

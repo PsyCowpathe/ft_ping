@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   print_menu.c                                       :+:      :+:    :+:   */
+/*   print_options.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: agirona <marvin@42.fr>                    +#+  +:+       +#+         */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -30,4 +30,10 @@ void	print_help_menu(void)
 	printf("-V, --V			give this help list\n");
 	printf("-?, --?			print program version\n");
 	exit(0);
+}
+
+int	print_dns_option(t_parameters *params)
+{
+	params->reverse_dns = true;
+	return (1);
 }

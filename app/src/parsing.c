@@ -81,12 +81,18 @@ int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
 		print_version_menu();
 	if (strcmp(flag_id, "?") == 0)
 		print_help_menu();
+	if (strcmp(flag_id, "rdns") == 0)
+		return (print_dns_option(params));
 	current_index++;
 	if (current_index == argc)
-		error_exit(1, false, MISSING_VALUE, flag_id);
+		error_exit(1, true, MISSING_VALUE, flag_id);
 	flag_value = args[current_index];
 	if (verify_flag_value(flag_id, flag_value))
+	{
+		if (flag_id[0] == '\0')
+			return (1);
 		error_exit(1, false, INVALID_VALUE, flag_value);
+	}
 	store_flag(params, flag_id, flag_value);
 	verify_flag_limits(params);
 	return (0);
@@ -94,20 +100,23 @@ int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
 
 int	parse_args(char **args, int argc, t_parameters *params)
 {
-	int		i;
+	int	i;
+	int	ret;
 
 	i = 1;
 	while (i < argc)
 	{
 		if (args[i][0] == '-')
 		{
-			if (parse_flag(params, args, argc, i) == -1)
+			ret = parse_flag(params, args, argc, i);
+			if (ret == -1)
 				return (-1);
-			i++;
+			if (ret == 0)
+				i++;
 		}
 		else
 		{
-			params->string_ip_address = args[i];
+			params->string_original_target = args[i];
 			verify_target_address(params);
 		}
 		i++;

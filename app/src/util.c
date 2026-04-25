@@ -19,10 +19,6 @@ void	store_extra_flag(t_parameters *params, char *flag_id, char *flag_value)
 		params->time_to_live = atoi(flag_value);
 		params->string_time_to_live = flag_value;
 	}
-	else if (strcmp(flag_id, "v") == 0)
-		params->version = true;
-	else if (strcmp(flag_id, "?") == 0)
-		params->help = true;
 	else
 		error_exit(1, true, INVALID_OPTION, flag_id);
 }
@@ -80,20 +76,18 @@ void	error_exit(int code, bool print_try, const char *msg, ...)
 
 void	init_flag_structure(t_parameters *params)
 {
-	params->ip_address = NULL;
-	params->string_ip_address = NULL;
+	bzero(params, sizeof(t_parameters));
+	params->send_count = 0;
+	params->receive_count = 0;
 	params->version = false;
 	params->help = false;
 	params->count = -1;
-	params->string_ip_address = NULL;
 	params->interval = 1;
-	params->string_interval = NULL;
 	params->timeout = -1;
-	params->string_timeout = NULL;
 	params->paquet_size = 56;
-	params->string_paquet_size = NULL;
 	params->time_to_live = 64;
-	params->string_time_to_live = NULL;
+	params->reverse_dns = false;
+	params->dns_name[0] = '\0';
 }
 
 int	check_is_float(char *flag_value)

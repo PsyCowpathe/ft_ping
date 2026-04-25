@@ -22,14 +22,14 @@ void	dns_lookup(t_parameters *params)
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_RAW;
 	hints.ai_protocol = IPPROTO_ICMP;
-	if (getaddrinfo(params->string_ip_address, NULL, &hints, &result) != 0)
-		error_exit(1, false, "unknow host");
+	if (getaddrinfo(params->string_original_target, NULL, &hints, &result) != 0)
+		error_exit(1, false, UNKNOW_HOST);
 	params->ip_address = (struct addrinfo *)result;
 	if (inet_ntop(AF_INET,
 			&(((struct sockaddr_in *)params->ip_address->ai_addr)->sin_addr),
 			params->string_ip_address, INET_ADDRSTRLEN) == NULL)
 	{
-		perror("Error while converting IP address to text ! ");
+		perror(ERROR_DNS);
 		exit(1);
 	}
 }
@@ -48,13 +48,13 @@ void	reverse_dns_lookup(t_parameters *params)
 			params->dns_name, sizeof(params->dns_name), NULL, 0,
 			NI_NAMEREQD);
 	if (ret != 0)
-		error_exit(1, false,
-			"could not resolve reverse dns of %s, with error %s",
-			params->string_ip_address, gai_strerror(ret));
+		strcpy(params->dns_name, params->string_ip_address);
 }
 
 void	verify_target_address(t_parameters *params)
 {
 	dns_lookup(params);
-	reverse_dns_lookup(params);
+	strcpy(params->dns_name, params->string_original_target);
+	if (params->reverse_dns == true)
+		reverse_dns_lookup(params);
 }
