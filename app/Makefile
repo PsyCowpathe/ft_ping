@@ -10,10 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-
 NAME = ft_ping
 
-SRCS = main.c parsing.c print_menu.c util.c dns.c
+SRCS =	main.c parsing.c print_menu.c util.c dns.c network.c \
+		stats.c
 
 SRCS_DIR = src
 
@@ -25,12 +25,14 @@ OBJS_PATH = $(addprefix $(OBJS_DIR)/, $(OBJS))
 
 INC	= include
 
+LIBFLAGS = -lm
+
 CFLAGS	= -Wall -Wextra -Werror -I $(INC)
 
 all: $(NAME)
 
 $(NAME) :	$(OBJS_PATH)
-			gcc $(CFLAGS) $(OBJS_PATH) -o $(NAME)
+			gcc $(CFLAGS) $(OBJS_PATH) $(LIBFLAGS) -o $(NAME)
 
 $(OBJS_DIR):
 	mkdir -p $(OBJS_DIR)

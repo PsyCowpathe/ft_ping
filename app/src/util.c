@@ -77,17 +77,18 @@ void	error_exit(int code, bool print_try, const char *msg, ...)
 void	init_flag_structure(t_parameters *params)
 {
 	bzero(params, sizeof(t_parameters));
-	params->send_count = 0;
-	params->receive_count = 0;
+	params->iteration = 1;
 	params->version = false;
 	params->help = false;
 	params->count = -1;
 	params->interval = 1;
-	params->timeout = -1;
+	params->timeout = 4;
 	params->paquet_size = 56;
 	params->time_to_live = 64;
 	params->reverse_dns = false;
+	params->verbose = false;
 	params->dns_name[0] = '\0';
+	params->stats.rtt_min = -1;
 }
 
 int	check_is_float(char *flag_value)

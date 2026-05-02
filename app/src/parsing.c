@@ -71,27 +71,29 @@ int	verify_flag_limits(t_parameters *params)
 	return (0);
 }
 
-int	parse_flag(t_parameters *params, char **args, int argc, int current_index)
+int	parse_flag(t_parameters *params, char **args, int argc, int index)
 {
 	char	*flag_id;
 	char	*flag_value;
 
-	flag_id = parse_flag_identifier(args[current_index]);
+	flag_id = parse_flag_identifier(args[index]);
 	if (strcmp(flag_id, "V") == 0)
 		print_version_menu();
 	if (strcmp(flag_id, "?") == 0)
 		print_help_menu();
 	if (strcmp(flag_id, "rdns") == 0)
-		return (print_dns_option(params));
-	current_index++;
-	if (current_index == argc)
+		return (enable_rdns(params));
+	if (strcmp(flag_id, "v") == 0)
+		return (enable_verbose(params));
+	index++;
+	if (index == argc)
 		error_exit(1, true, MISSING_VALUE, flag_id);
-	flag_value = args[current_index];
+	flag_value = args[index];
 	if (verify_flag_value(flag_id, flag_value))
 	{
 		if (flag_id[0] == '\0')
 			return (1);
-		error_exit(1, false, INVALID_VALUE, flag_value);
+		error_exit(1, true, INVALID_VALUE, flag_value);
 	}
 	store_flag(params, flag_id, flag_value);
 	verify_flag_limits(params);
