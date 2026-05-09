@@ -46,6 +46,7 @@ char	*receive_response(t_parameters *params)
 	char	*result;
 
 	ret = recv(params->socket_fd, &buffer, sizeof(buffer), 0);
+
 	if (ret <= 0)
 	{
 		return (NULL);
@@ -96,8 +97,6 @@ int	main(int argc, char **argv)
 		init_flag_structure(&params);
 		if (parse_args(argv, argc, &params) == -1)
 			return (1);
-		if (params.string_original_target == NULL)
-			error_exit(1, true, MISSING_HOST);
 		g_run = true;
 		print_preamble(params);
 		ft_ping(&params);

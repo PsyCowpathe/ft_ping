@@ -12,7 +12,7 @@
 
 NAME = ft_ping
 
-SRCS =	main.c parsing.c print_menu.c util.c dns.c network.c \
+SRCS =	main.c parsing.c parsing_utils.c print_menu.c util.c dns.c network.c \
 		stats.c
 
 SRCS_DIR = src

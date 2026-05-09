@@ -42,7 +42,7 @@ void	print_preamble(t_parameters params)
 	pid = getpid();
 	if (params.verbose)
 		printf(VERBOSE_PREAMBLE, params.string_original_target,
-			params.string_ip_address, params.paquet_size, pid);
+			params.string_ip_address, params.paquet_size, pid, pid);
 	else
 		printf(PREAMBLE, params.string_original_target,
 			params.string_ip_address, params.paquet_size);

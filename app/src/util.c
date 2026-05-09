@@ -90,24 +90,3 @@ void	init_flag_structure(t_parameters *params)
 	params->dns_name[0] = '\0';
 	params->stats.rtt_min = -1;
 }
-
-int	check_is_float(char *flag_value)
-{
-	int		i;
-	bool	dot_found;
-
-	i = 0;
-	dot_found = false;
-	while (flag_value[i] != '\0')
-	{
-		if (isdigit(flag_value[i]) == 0)
-		{
-			if (flag_value[i] != '.' || dot_found == true)
-				return (-1);
-			if (flag_value[i] == '.')
-				dot_found = true;
-		}
-		i++;
-	}
-	return (0);
-}

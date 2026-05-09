@@ -51,18 +51,19 @@ Try \'ft_ping -?\' for more information.\n"
  with error : \"%s\""
 # define HOST_UNREACHABLE "%d bytes from %s: Destination Host Unreachable\n"
 # define TTL_EXCEEDED "%d bytes from %s: Time to live exceeded\n"
+# define BAD_TIMING_INTERVAL "bad timing interval: %s"
 
 /****************** SUCCESS ******************/
 
 # define PREAMBLE "ft_ping %s (%s): %d data bytes\n"
-# define VERBOSE_PREAMBLE "ft_ping %s (%s): %d data bytes, id 0x%04x:\n"
+# define VERBOSE_PREAMBLE "ft_ping %s (%s): %d data bytes, id 0x%04x = %d\n"
 # define TICK_RESPONSE "%d bytes from %s: icmp_seq=%d ttl=%d time=%.3Lf\n"
 # define TICK_RESPONSE_RDNS "%d bytes from %s (%s):\
  icmp_seq=%d ttl=%d time=%.3Lf\n"
 # define TRANSMITED "%d packets transmitted, %d packets received,\
-%.0lf%% packet loss\n"
+ %.0lf%% packet loss\n"
 # define RTT_STATS "round-trip min/avg/max/stddev =\
-%.3Lf/%.3Lf/%.3Lf/%.3Lf ms\n"
+ %.3Lf/%.3Lf/%.3Lf/%.3Lf ms\n"
 # define ECHOREQUEST "Found an Echorequest, are you pinging yourself ?!\n"
 
 typedef struct s_stats
@@ -107,7 +108,7 @@ typedef struct s_parameters
 	float				interval;
 	char				*string_interval;
 
-	// [BONUS] Time limit in second between start and end of ping execution (-w)
+	// [BONUS] Number of seconds to wait for response (-w)
 	int					timeout;
 	char				*string_timeout;
 
@@ -147,7 +148,11 @@ int			parse_args(char **args, int argc, t_parameters *params);
 void		store_flag(t_parameters *params, char *flag_id, char *flag_value);
 void		error_exit(int code, bool print_try, const char *msg, ...);
 void		init_flag_structure(t_parameters *params);
+
+/****************** print_utils ******************/
+
 int			check_is_float(char *flag_value);
+int			check_is_int(char *flag_value);
 
 /****************** dns ******************/
 void		verify_target_address(t_parameters *params);

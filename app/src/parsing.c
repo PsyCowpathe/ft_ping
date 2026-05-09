@@ -11,6 +11,9 @@
 /* ************************************************************************** */
 
 #include "../include/ft_ping.h"
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
 
 char	*parse_flag_identifier(char *to_parse)
 {
@@ -31,13 +34,12 @@ char	*parse_flag_identifier(char *to_parse)
 
 int	verify_flag_value(char *flag_id, char *flag_value)
 {
-	int		i;
-
-	i = 0;
-	if (flag_value[0] == '-')
-		flag_value = flag_value + 1;
-	if (flag_value[0] == '\0')
+	if (flag_value[0] == '-' && flag_value[1] == '\0')
+	{
 		return (-1);
+	}
+	if (flag_value[0] == '\0')
+		return (0);
 	if (strcmp(flag_id, "i") == 0)
 	{
 		if (check_is_float(flag_value) == -1)
@@ -45,12 +47,8 @@ int	verify_flag_value(char *flag_id, char *flag_value)
 	}
 	else
 	{
-		while (flag_value[i] != '\0')
-		{
-			if (isdigit(flag_value[i]) == 0)
-				return (-1);
-			i++;
-		}
+		if (check_is_int(flag_value) == -1)
+			return (-1);
 	}
 	return (0);
 }
@@ -61,14 +59,37 @@ int	verify_flag_limits(t_parameters *params)
 		error_exit(1, false, TOO_SMALL, params->string_time_to_live);
 	else if (params->time_to_live > TTL_MAX || params->time_to_live < TTL_MIN)
 		error_exit(1, false, TOO_BIG, params->string_time_to_live);
+	if (params->timeout == 0)
+		error_exit(1, false, TOO_SMALL, params->string_timeout);
+	else if (params->timeout < 0)
+		error_exit(1, false, TOO_BIG, params->string_timeout);
 	if (params->interval < 0.2)
 	{
 		if (getuid() != 0)
 			error_exit(1, false, TOO_SMALL, params->string_interval);
 	}
-	if (params->paquet_size > PACKET_MAX_SIZE)
+	if (params->paquet_size > PACKET_MAX_SIZE || params->paquet_size < 0)
 		error_exit(1, false, TOO_BIG, params->string_paquet_size);
+	if (params->interval < 0)
+		error_exit(1, false, BAD_TIMING_INTERVAL, params->string_interval);
+	if (params->count == 0)
+		params->count = UINT32_MAX;
 	return (0);
+}
+
+int	verify_flag_identifier(char *flag_id)
+{
+	if (strcmp(flag_id, "c") == 0)
+		return (0);
+	if (strcmp(flag_id, "i") == 0)
+		return (0);
+	if (strcmp(flag_id, "w") == 0)
+		return (0);
+	if (strcmp(flag_id, "s") == 0)
+		return (0);
+	if (strcmp(flag_id, "ttl") == 0)
+		return (0);
+	return (-1);
 }
 
 int	parse_flag(t_parameters *params, char **args, int argc, int index)
@@ -89,12 +110,10 @@ int	parse_flag(t_parameters *params, char **args, int argc, int index)
 	if (index == argc)
 		error_exit(1, true, MISSING_VALUE, flag_id);
 	flag_value = args[index];
-	if (verify_flag_value(flag_id, flag_value))
-	{
-		if (flag_id[0] == '\0')
-			return (1);
+	if (verify_flag_identifier(flag_id) == -1)
+		error_exit(1, true, INVALID_OPTION, flag_id);
+	if (verify_flag_value(flag_id, flag_value) == -1)
 		error_exit(1, true, INVALID_VALUE, flag_value);
-	}
 	store_flag(params, flag_id, flag_value);
 	verify_flag_limits(params);
 	return (0);
@@ -116,12 +135,12 @@ int	parse_args(char **args, int argc, t_parameters *params)
 			if (ret == 0)
 				i++;
 		}
-		else
+		else if (params->string_original_target == NULL)
 		{
 			params->string_original_target = args[i];
-			verify_target_address(params);
 		}
 		i++;
 	}
+	verify_target_address(params);
 	return (0);
 }

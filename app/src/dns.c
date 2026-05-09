@@ -53,6 +53,8 @@ void	reverse_dns_lookup(t_parameters *params)
 
 void	verify_target_address(t_parameters *params)
 {
+	if (params->string_original_target == NULL)
+		error_exit(1, true, MISSING_HOST);
 	dns_lookup(params);
 	strcpy(params->dns_name, params->string_original_target);
 	if (params->reverse_dns == true)
