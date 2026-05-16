@@ -77,21 +77,6 @@ int	verify_flag_limits(t_parameters *params)
 	return (0);
 }
 
-int	verify_flag_identifier(char *flag_id)
-{
-	if (strcmp(flag_id, "c") == 0)
-		return (0);
-	if (strcmp(flag_id, "i") == 0)
-		return (0);
-	if (strcmp(flag_id, "w") == 0)
-		return (0);
-	if (strcmp(flag_id, "s") == 0)
-		return (0);
-	if (strcmp(flag_id, "ttl") == 0)
-		return (0);
-	return (-1);
-}
-
 int	parse_flag(t_parameters *params, char **args, int argc, int index)
 {
 	char	*flag_id;

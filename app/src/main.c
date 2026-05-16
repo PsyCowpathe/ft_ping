@@ -46,7 +46,6 @@ char	*receive_response(t_parameters *params)
 	char	*result;
 
 	ret = recv(params->socket_fd, &buffer, sizeof(buffer), 0);
-
 	if (ret <= 0)
 	{
 		return (NULL);

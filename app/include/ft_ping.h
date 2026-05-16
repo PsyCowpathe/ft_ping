@@ -149,10 +149,10 @@ void		store_flag(t_parameters *params, char *flag_id, char *flag_value);
 void		error_exit(int code, bool print_try, const char *msg, ...);
 void		init_flag_structure(t_parameters *params);
 
-/****************** print_utils ******************/
-
+/****************** parsing_utils ******************/
 int			check_is_float(char *flag_value);
 int			check_is_int(char *flag_value);
+int			verify_flag_identifier(char *flag_id);
 
 /****************** dns ******************/
 void		verify_target_address(t_parameters *params);
